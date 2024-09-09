@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>Oxer</title>
+  <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Inter:wght@900|Josefin+Sans:wght@700&display=swap" rel="stylesheet" />
+  <link href="css/style.css" rel="stylesheet" />
+  <link href="css/responsive.css" rel="stylesheet" />
+</head>
+<body class="bg-yellow-400 text-white flex flex-col items-center justify-center min-h-screen" style="background-color: #FCDB64;">
+    <div class="center-content text-center p-4 mx-auto sm:max-w-md md:max-w-lg lg:max-w-xl">
+      <div class="time-display text-4xl mb-4">
+        <span id="hours">23</span>:<span id="minutes">25</span>
+      </div>
+      <img src="images/food-bowl-icon.png" alt="Food Bowl" class="food-bowl mx-auto mb-4 w-24 h-24 cursor-pointer" onclick="publishQuantityToEsp()" />
+      <div class="relative flex items-center max-w-[8rem] mx-auto mb-4">
+        <button type="button" id="decrement-button"
+                class="bg-gray-700 hover:bg-gray-600 border border-gray-600 rounded-l-lg p-3 h-11 focus:ring-gray-700 focus:ring-2 focus:outline-none">
+            <svg class="w-3 h-3 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 2">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h16"/>
+            </svg>
+        </button>
+        <div id="quantity-display"
+             class="bg-white border border-gray-600 text-center text-gray-800 text-sm py-2 px-4">
+             0
+        </div>
+        <button type="button" id="increment-button"
+                class="bg-gray-700 hover:bg-gray-600 border border-gray-600 rounded-r-lg p-3 h-11 focus:ring-gray-700 focus:ring-2 focus:outline-none">
+            <svg class="w-3 h-3 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 1v16M1 9h16"/>
+            </svg>
+        </button>
+      </div>
+    </div>
+    <div class="meal-schedule text-center mb-4 mx-auto ">
+      <h6 class="text-lg font-medium">Meal schedule</h6>
+      <p id="nextFeedingTime">Next feeding time will be shown here.</p>
+    </div>
+    <div class="nav-bar flex justify-center space-x-4 mt-4">
+        <a href="home.html">
+            <img src="images/home-icon.png" alt="Home" class="w-6 h-6" />
+        </a>
+        <a href="schedule.html">
+            <img src="images/schedule-icon.png" alt="Schedule" class="w-6 h-6" />
+        </a>
+        <img src="images/stats-icon.png" alt="Stats" class="w-6 h-6" />
+        <img src="images/settings-icon.png" alt="Settings" class="w-6 h-6" />
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.2.8/mqtt.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        let client; // MQTT client variable
+        let activeTimer; // Timer variable for redirect
+    
+        const host = 'ws://broker.hivemq.com:8000/mqtt'; // MQTT broker address
+        const options = {
+            // MQTT options, if needed
+        };
+    
+        // Function to initialize MQTT client
+        function initMqttClient() {
+            if (!client) {
+                console.log('Connecting MQTT client to:', host);
+                client = mqtt.connect(host, options); // Initialize MQTT client
+    
+                // Event listener: on connect
+                client.on('connect', () => {
+                    console.log('Connected to MQTT broker');
+                    // You can update UI or perform actions on successful connection here
+                });
+    
+                // Event listener: on error
+                client.on('error', (err) => {
+                    console.log('Connection error: ', err);
+                    // Handle connection errors here
+                });
+    
+                // Example subscription
+                const topic = 'emqx/esp8266/checkstatus';
+                client.subscribe(topic, (err) => {
+                    if (err) {
+                        console.log('Subscription error:', err);
+                    } else {
+                        console.log('Subscribed to topic:', topic);
+                    }
+                });
+    
+                // Event listener: on message
+                client.on('message', (topic, message) => {
+                    console.log('Received message:', topic, message.toString());
+                    // Process received messages here
+                    // Example: Check if device is active
+                    if (topic === 'emqx/esp8266/checkstatus' && message.toString().trim() === 'Device is active') {
+                        console.log('Device is active!');
+                        // Reset the timer on active message
+                        resetActiveTimer();
+                    }
+                });
+    
+                // Initialize timer to redirect after 2 minutes
+                activeTimer = setTimeout(() => {
+                    console.log('Device not active. Redirecting...');
+                    window.location.href = 'index.html';
+                }, 120000); // 2 minutes in milliseconds
+            }
+        }
+    
+        // Function to reset active timer
+        function resetActiveTimer() {
+            clearTimeout(activeTimer); // Clear previous timer
+            activeTimer = setTimeout(() => {
+                console.log('Device not active. Redirecting...');
+                window.location.href = 'index.html';
+            }, 120000); // 2 minutes in milliseconds
+        }
+    
+        // Initialize MQTT client when the page loads
+        initMqttClient();
+    </script>
+    
+    <script>
+      // Function to update time
+      function updateTime() {
+        const now = new Date();
+        document.getElementById('hours').textContent = now.getHours().toString().padStart(2, '0');
+        document.getElementById('minutes').textContent = now.getMinutes().toString().padStart(2, '0');
+      }
+  
+      setInterval(updateTime, 1000);
+      updateTime(); // initial call to display time immediately
+    </script>
+    <script>
+        let currentValue = 0; // Initial value
+
+        // Function to update quantity display
+        function updateQuantityDisplay() {
+            const displayElement = document.getElementById('quantity-display');
+            displayElement.textContent = currentValue.toString();
+        }
+
+        // Function to handle increment button click
+        document.getElementById('increment-button').addEventListener('click', function() {
+            currentValue++;
+            updateQuantityDisplay();
+        });
+
+        // Function to handle decrement button click
+        document.getElementById('decrement-button').addEventListener('click', function() {
+            if (currentValue > 0) {
+                currentValue--;
+                updateQuantityDisplay();
+            }
+        });
+
+        // Initial call to updateQuantityDisplay
+        updateQuantityDisplay();
+    </script>
+    <script>
+        function publishQuantityToEsp() {
+            const topic = 'emqx/esp8266/foodquantity'; // MQTT topic for sending food quantity
+            const message = currentValue.toString(); // Convert currentValue to string and send
+            client.publish(topic, message);
+            console.log('Published message:', message, 'to topic:', topic);
+        }
+    </script>
+    

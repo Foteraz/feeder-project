@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Basic Meta Tags and Bootstrap -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>Schedule</title>
+  <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+  <link href="css/style.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Inter:wght@900|Josefin+Sans:wght@700&display=swap" rel="stylesheet" />
+  <style>
+    .schedule-section {
+      max-height: 400px;
+      overflow-y: scroll;
+    }
+    .schedule-list {
+      list-style: none;
+      padding: 0;
+    }
+    .schedule-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    .schedule-list li .actions {
+      display: flex;
+      align-items: center;
+    }
+    .schedule-list li .actions button {
+      margin-left: 10px;
+    }
+    .nav-bar {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .nav-bar a, .nav-bar img {
+      margin: 0 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">Schedule</div>
+
+  <div class="schedule-section">
+    <h6>SCHEDULE</h6>
+    <ul class="schedule-list" id="scheduleList">
+      <!-- Existing and dynamically added schedule items will appear here -->
+    </ul>
+    <div class="add-meal" data-toggle="modal" data-target="#addScheduleModal"><i class="fas fa-plus"></i> Add Meal</div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="addScheduleModal" tabindex="-1" role="dialog" aria-labelledby="addScheduleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addScheduleModalLabel">Add Feeding Schedule</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="feedingForm">
+            <div class="form-group">
+              <label for="feedingDays">Feeding Days:</label><br>
+              <div class="form-check form-check-inline">
+                <input type="checkbox" id="feedingMonday" name="feedingDays" value="Monday" class="form-check-input">
+                <label for="feedingMonday" class="form-check-label">Monday</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input type="checkbox" id="feedingTuesday" name="feedingDays" value="Tuesday" class="form-check-input">
+                <label for="feedingTuesday" class="form-check-label">Tuesday</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input type="checkbox" id="feedingWednesday" name="feedingDays" value="Wednesday" class="form-check-input">
+                <label for="feedingWednesday" class="form-check-label">Wednesday</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input type="checkbox" id="feedingThursday" name="feedingDays" value="Thursday" class="form-check-input">
+                <label for="feedingThursday" class="form-check-label">Thursday</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input type="checkbox" id="feedingFriday" name="feedingDays" value="Friday" class="form-check-input">
+                <label for="feedingFriday" class="form-check-label">Friday</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input type="checkbox" id="feedingSaturday" name="feedingDays" value="Saturday" class="form-check-input">
+                <label for="feedingSaturday" class="form-check-label">Saturday</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input type="checkbox" id="feedingSunday" name="feedingDays" value="Sunday" class="form-check-input">
+                <label for="feedingSunday" class="form-check-label">Sunday</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input type="checkbox" id="feedingAll" name="feedingDays" value="All" class="form-check-input">
+                <label for="feedingAll" class="form-check-label">Everyday</label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="feedingTime">Feeding Time:</label>
+              <input type="time" id="feedingTime" name="feedingTime" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="portion">Portion:</label>
+              <input type="number" id="portion" name="portion" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-primary">Add</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-bar flex justify-center space-x-4 mt-4">
+    <a href="home.html">
+      <img src="images/home-icon.png" alt="Home" class="w-6 h-6" />
+    </a>
+    <img src="images/schedule-icon.png" alt="Schedule" class="w-6 h-6" />
+    <img src="images/stats-icon.png" alt="Stats" class="w-6 h-6" />
+    <img src="images/settings-icon.png" alt="Settings" class="w-6 h-6" />
+  </div>
+
+  <!-- jQuery, Popper.js, Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.10.2/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      // Initialize local storage for schedule
+      let schedule = JSON.parse(localStorage.getItem('schedule')) || [];
+
+      function addScheduleItem(data) {
+        schedule.push(data);
+        localStorage.setItem('schedule', JSON.stringify(schedule));
+        renderScheduleList();
+      }
+
+      function renderScheduleList() {
+        const $scheduleList = $('#scheduleList');
+        $scheduleList.empty();
+        schedule.forEach(item => {
+          const listItem = `<li data-id="${item.id}">
+            <div>
+              ${item.feedingDays.join(', ')} at ${item.feedingTime} - ${item.portion} portion
+            </div>
+            <div class="actions">
+              <button class="btn btn-danger" onclick="removeScheduleItem(${item.id})">Remove</button>
+            </div>
+          </li>`;
+          $scheduleList.append(listItem);
+        });
+      }
+
+      // Load existing schedule items on page load
+      renderScheduleList();
+
+      $('#feedingForm').submit(function(event) {
+        event.preventDefault();
+
+        const feedingDays = [];
+        $('input[name="feedingDays"]:checked').each(function() {
+          feedingDays.push(this.value);
+        });
+
+        if (feedingDays.includes('All')) {
+          feedingDays.length = 0;
+          feedingDays.push('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday');
+        }
+
+        const feedingTime = $('#feedingTime').val();
+        const portion = $('#portion').val();
+
+        const newItem = {
+          id: Date.now(),
+          feedingDays,
+          feedingTime,
+          portion
+        };
+
+        // Send data to server to add schedule to Google Calendar
+        $.ajax({
+          url: 'http://localhost:3000/add-schedule',
+          type: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify(newItem),
+          success: function(response) {
+            console.log('Schedule added to Google Calendar', response);
+            addScheduleItem(newItem);
+          },
+          error: function(error) {
+            console.error('Error adding schedule to Google Calendar', error);
+          }
+        });
+
+        // Clear form fields
+        $('#feedingForm')[0].reset();
+        $('#addScheduleModal').modal('hide');
+      });
+
+      // Function to remove schedule item
+      window.removeScheduleItem = function(id) {
+        schedule = schedule.filter(item => item.id !== id);
+        localStorage.setItem('schedule', JSON.stringify(schedule));
+        $(`li[data-id="${id}"]`).remove();
+      }
+    });
+  </script>
+</body>
+</html>
